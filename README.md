@@ -6,6 +6,19 @@ Generic email forwarding chain diagnostic and audit tool. Tests DNS, SPF, DKIM, 
 
 Version: **0.1.0**
 
+## How It Works
+
+This tool is **passive** — it does not send any emails. All analysis is based on DNS record inspection and RFC-compliant logic:
+
+1. **Reads DNS records** (MX, SPF, DKIM, DMARC, PTR, MTA-STS, DANE) for each domain in the chain
+2. **Expands SPF recursively** — follows `include:`, `redirect=`, resolves `a:`, `mx`, `ip4:`, `ip6:` directives (up to 10 levels per RFC 7208)
+3. **Simulates authentication** — determines whether SPF/DKIM/DMARC would pass or fail when mail traverses the relay, based on which IPs are authorized by which domains
+4. **Probes SMTP connectivity** — the only active network test; checks if relay and destination mail servers are reachable on ports 25/465/587
+
+The relay → destination test answers: *"If the relay server connects to the destination MX and presents mail from the original sender, will SPF pass? Is the relay a trusted forwarder? What does the sender's DMARC policy do on failure?"* — all deterministic from DNS.
+
+> **Note:** To verify end-to-end delivery, send a real test email through the chain and inspect the `Authentication-Results` header at the destination. This tool predicts the outcome; the header confirms it.
+
 ## Requirements
 
 - `bash` 4+
