@@ -216,7 +216,9 @@ Dark-themed HTML report with:
 - Critical findings list
 - Recommended fixes (shown only when forwarding breakage is detected)
 - Full results table grouped by test section
-- See `examples/sample-report.html` for a live example
+- See `examples/sample-report.html` for the raw HTML
+
+![Sample HTML Report](examples/sample-report-screenshot.png)
 
 ### JSON Report (`--json` or `--dir`)
 
