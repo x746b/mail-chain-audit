@@ -4,8 +4,6 @@ Generic email forwarding chain diagnostic and audit tool. Tests DNS, SPF, DKIM, 
 
 ![Sample HTML Report](examples/sample-report-screenshot.png)
 
-Version: **0.1.0**
-
 ## How It Works
 
 This tool is **passive** — it does not send any emails. All analysis is based on DNS record inspection and RFC-compliant logic:
