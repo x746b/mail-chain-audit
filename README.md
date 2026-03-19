@@ -2,6 +2,8 @@
 
 Generic email forwarding chain diagnostic and audit tool. Tests DNS, SPF, DKIM, DMARC, reverse DNS, SMTP connectivity, TLS, SRS/ARC mitigations, and MTA-STS/DANE across a 2-hop or 3-hop email delivery chain.
 
+![Sample HTML Report](examples/sample-report-screenshot.png)
+
 Version: **0.1.0**
 
 ## Requirements
@@ -217,8 +219,6 @@ Dark-themed HTML report with:
 - Recommended fixes (shown only when forwarding breakage is detected)
 - Full results table grouped by test section
 - See `examples/sample-report.html` for the raw HTML
-
-![Sample HTML Report](examples/sample-report-screenshot.png)
 
 ### JSON Report (`--json` or `--dir`)
 
