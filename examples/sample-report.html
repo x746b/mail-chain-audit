@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Chain Audit Report</title>
+<style>
+:root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3;
+        --green: #3fb950; --red: #f85149; --yellow: #d29922; --blue: #58a6ff;
+        --dim: #8b949e; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+h1 { text-align: center; margin-bottom: 0.5rem; font-size: 1.5rem; }
+.subtitle { text-align: center; color: var(--dim); margin-bottom: 2rem; font-size: 0.9rem; }
+.chain { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.chain-node { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; font-family: monospace; font-size: 0.85rem; }
+.chain-arrow { color: var(--dim); font-size: 1.2rem; }
+.chain-break { color: var(--red); font-weight: bold; }
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.summary-card { background: var(--card); border-radius: 8px; padding: 1rem; text-align: center; border: 1px solid var(--border); }
+.summary-card .count { font-size: 2rem; font-weight: bold; }
+.summary-card.pass .count { color: var(--green); }
+.summary-card.fail .count { color: var(--red); }
+.summary-card.warn .count { color: var(--yellow); }
+.summary-card.info .count { color: var(--blue); }
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+.section-header { padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); }
+.section-body { padding: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { text-align: left; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); color: var(--dim); font-weight: 500; }
+td { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+.status { font-weight: 600; font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; }
+.status-PASS { background: #0f2d1a; color: var(--green); }
+.status-FAIL { background: #2d0f0f; color: var(--red); }
+.status-WARN { background: #2d2200; color: var(--yellow); }
+.status-INFO { background: #0f1d2d; color: var(--blue); }
+.findings { background: #1a0000; border: 1px solid #3d1010; border-radius: 8px; padding: 1rem; margin-bottom: 2rem; }
+.findings h3 { color: var(--red); margin-bottom: 0.5rem; }
+.findings li { margin: 0.25rem 0 0.25rem 1.5rem; font-size: 0.9rem; }
+.fix-list { background: #001a0f; border: 1px solid #103d20; border-radius: 8px; padding: 1rem; margin-bottom: 2rem; }
+.fix-list h3 { color: var(--green); margin-bottom: 0.5rem; }
+.fix-list li { margin: 0.25rem 0 0.25rem 1.5rem; font-size: 0.9rem; }
+.detail { font-family: monospace; font-size: 0.8rem; color: var(--dim); word-break: break-all; }
+</style>
+</head>
+<body>
+<h1>Email Forwarding Chain — Audit Report</h1>
+<p class="subtitle">Generated: 2026-03-19 15:18:07 CET | Mode: 3-hop (sender → relay → destination)</p>
+<div class="chain">
+  <div class="chain-node">postmaster@shopify.com<br><small>shopify.com</small></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-node">postmaster@harvard.edu<br><small>MX: 67.231.148.27</small></div>
+  <div class="chain-arrow chain-break">✗→</div>
+  <div class="chain-node">postmaster@gmail.com<br><small>gmail-smtp-in.l.google.com</small></div>
+</div>
+<div class="summary">
+  <div class="summary-card pass"><div class="count">25</div>PASS</div>
+  <div class="summary-card fail"><div class="count">8</div>FAIL</div>
+  <div class="summary-card warn"><div class="count">4</div>WARN</div>
+  <div class="summary-card info"><div class="count">14</div>INFO</div>
+</div>
+<div class="findings"><h3>Critical Findings</h3><ul>
+<li>WARN: [SPF] Sender policy — Soft fail (~all)</li>
+<li>FAIL: [SPF] Relay record — No SPF record</li>
+<li>FAIL: [SPF Auth] Forward IP in sender SPF — 67.231.148.27 not in shopify.com SPF — SPF breaks on forward</li>
+<li>FAIL: [SPF Auth] Trusted forwarder — 67.231.148.27 not in gmail.com SPF</li>
+<li>WARN: [DKIM] Destination discovery — No selectors found</li>
+<li>WARN: [DMARC] Relay policy — quarantine — not reject</li>
+<li>FAIL: [DMARC] Destination policy — none — no enforcement</li>
+<li>FAIL: [Forward Sim] SPF at destination — 67.231.148.27 not in shopify.com SPF</li>
+<li>WARN: [Forward Sim] DKIM survival — Cannot verify without actual forwarded headers</li>
+<li>FAIL: [Forward Sim] DMARC verdict — SPF fails and DKIM likely fails → policies apply</li>
+<li>FAIL: [Forward Sim] Impact — p=reject means mail dropped</li>
+<li>FAIL: [Mitigations] SRS — No _srs.harvard.edu — forwarding breaks SPF without SRS</li>
+</ul></div>
+<div class="fix-list"><h3>Recommended Fixes</h3><ul>
+<li><strong>SRS (Sender Rewriting Scheme)</strong> — Configure on the relay to rewrite envelope-from, fixing SPF at the destination</li>
+<li><strong>ARC (Authenticated Received Chain)</strong> — Add ARC signing on the relay and configure destination to trust it</li>
+<li><strong>PTR Record</strong> — Set reverse DNS for relay IPs to prevent delivery penalties</li>
+<li><strong>Replace forwarding</strong> — Use IMAP/POP fetch instead of SMTP forwarding</li>
+</ul></div>
+<div class="section">
+<div class="section-header">DNS</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender MX</td><td><span class="status status-PASS">PASS</span></td><td class="detail">1 aspmx.l.google.com. 10 alt3.aspmx.l.google.com. 10 alt4.aspmx.l.google.com. 5 alt1.aspmx.l.google.com. 5 alt2.aspmx.l.google.com. </td></tr>
+<tr><td>Sender MX IP</td><td><span class="status status-INFO">INFO</span></td><td class="detail">173.194.76.27 </td></tr>
+<tr><td>Sender MX redundancy</td><td><span class="status status-PASS">PASS</span></td><td class="detail">5 MX records </td></tr>
+<tr><td>Sender IPv6</td><td><span class="status status-PASS">PASS</span></td><td class="detail">2a00:1450:400c:c02::1b </td></tr>
+<tr><td>Relay MX</td><td><span class="status status-PASS">PASS</span></td><td class="detail">100 mx0b-00171101.pphosted.com. 100 mx0a-00171101.pphosted.com. </td></tr>
+<tr><td>Relay MX IP</td><td><span class="status status-INFO">INFO</span></td><td class="detail">67.231.148.27 </td></tr>
+<tr><td>Relay MX redundancy</td><td><span class="status status-PASS">PASS</span></td><td class="detail">2 MX records </td></tr>
+<tr><td>Relay IPv6</td><td><span class="status status-INFO">INFO</span></td><td class="detail">No AAAA record </td></tr>
+<tr><td>Destination MX</td><td><span class="status status-PASS">PASS</span></td><td class="detail">5 gmail-smtp-in.l.google.com. 40 alt4.gmail-smtp-in.l.google.com. 10 alt1.gmail-smtp-in.l.google.com. 20 alt2.gmail-smtp-in.l.google.com. 30 alt3.gmail-smtp-in.l.google.com. </td></tr>
+<tr><td>Destination MX IP</td><td><span class="status status-INFO">INFO</span></td><td class="detail">173.194.76.26 </td></tr>
+<tr><td>Destination MX redundancy</td><td><span class="status status-PASS">PASS</span></td><td class="detail">5 MX records </td></tr>
+<tr><td>Destination IPv6</td><td><span class="status status-PASS">PASS</span></td><td class="detail">2a00:1450:400c:c0c::1a </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">rDNS</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Relay MX PTR</td><td><span class="status status-PASS">PASS</span></td><td class="detail">mx0a-00171101.pphosted.com. </td></tr>
+<tr><td>Relay MX FCrDNS</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Forward-confirmed </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">SPF</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender record</td><td><span class="status status-PASS">PASS</span></td><td class="detail">v=spf1 include:_spf.google.com include:mail.zendesk.com include:sendgrid.net ~all </td></tr>
+<tr><td>Sender policy</td><td><span class="status status-WARN">WARN</span></td><td class="detail">Soft fail (~all) </td></tr>
+<tr><td>Relay record</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">No SPF record </td></tr>
+<tr><td>Destination record</td><td><span class="status status-PASS">PASS</span></td><td class="detail">v=spf1 redirect=_spf.google.com </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">SPF Auth</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender IP in sender SPF</td><td><span class="status status-INFO">INFO</span></td><td class="detail">Skipped — provide --sender-ip from mail headers for accurate check </td></tr>
+<tr><td>Forward IP in sender SPF</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">67.231.148.27 not in shopify.com SPF — SPF breaks on forward </td></tr>
+<tr><td>Trusted forwarder</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">67.231.148.27 not in gmail.com SPF </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">DKIM</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender selector 'google'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Found (1296-bit) </td></tr>
+<tr><td>Sender selector 'mail'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Found (1296-bit) </td></tr>
+<tr><td>Relay selector 'default'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Found (1296-bit) </td></tr>
+<tr><td>Relay selector 'selector1'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to selector1-harvard-edu._domainkey.HU.onmicrosoft.com. </td></tr>
+<tr><td>Relay selector 'selector2'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to selector2-harvard-edu._domainkey.HU.onmicrosoft.com. </td></tr>
+<tr><td>Relay selector 's1'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to s1._domainkey.technolutions.net. </td></tr>
+<tr><td>Relay selector 's2'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to s2._domainkey.technolutions.net. </td></tr>
+<tr><td>Relay selector 'k1'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to dkim.mcsv.net. </td></tr>
+<tr><td>Relay selector 'k2'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Delegated via CNAME to dkim2.mcsv.net. </td></tr>
+<tr><td>Relay selector 'mandrill'</td><td><span class="status status-PASS">PASS</span></td><td class="detail">Found (1296-bit) </td></tr>
+<tr><td>Destination discovery</td><td><span class="status status-WARN">WARN</span></td><td class="detail">No selectors found </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">DMARC</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender record</td><td><span class="status status-INFO">INFO</span></td><td class="detail">dmarcreject.shopify.com. v=DMARC1; p=reject; pct=100; fo=1; rua=mailto:dmarc-aggregate@shopify.com;ruf=mailto:dmarc-reports@shopify.com </td></tr>
+<tr><td>Sender policy</td><td><span class="status status-PASS">PASS</span></td><td class="detail">reject </td></tr>
+<tr><td>Relay record</td><td><span class="status status-INFO">INFO</span></td><td class="detail">v=DMARC1; p=quarantine; sp=none; pct=100; adkim=r; aspf=r; rua=mailto:dmarc_agg@vali.email </td></tr>
+<tr><td>Relay policy</td><td><span class="status status-WARN">WARN</span></td><td class="detail">quarantine — not reject </td></tr>
+<tr><td>Destination record</td><td><span class="status status-INFO">INFO</span></td><td class="detail">v=DMARC1; p=none; sp=quarantine; rua=mailto:mailauth-reports@google.com </td></tr>
+<tr><td>Destination policy</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">none — no enforcement </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">Forward Sim</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Sender DMARC</td><td><span class="status status-INFO">INFO</span></td><td class="detail">p=reject aspf=r adkim=r </td></tr>
+<tr><td>SPF at destination</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">67.231.148.27 not in shopify.com SPF </td></tr>
+<tr><td>DKIM survival</td><td><span class="status status-WARN">WARN</span></td><td class="detail">Cannot verify without actual forwarded headers </td></tr>
+<tr><td>DMARC verdict</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">SPF fails and DKIM likely fails → policies apply </td></tr>
+<tr><td>Impact</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">p=reject means mail dropped </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">Mitigations</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>SRS</td><td><span class="status status-FAIL">FAIL</span></td><td class="detail">No _srs.harvard.edu — forwarding breaks SPF without SRS </td></tr>
+<tr><td>ARC</td><td><span class="status status-INFO">INFO</span></td><td class="detail">ARC must be configured on forwarding server </td></tr>
+</table></div></div>
+<div class="section">
+<div class="section-header">Transport</div>
+<div class="section-body"><table>
+<tr><th>Test</th><th>Status</th><th>Detail</th></tr>
+<tr><td>Relay MTA-STS</td><td><span class="status status-INFO">INFO</span></td><td class="detail">Not configured </td></tr>
+<tr><td>Relay TLS-RPT</td><td><span class="status status-INFO">INFO</span></td><td class="detail">Not configured </td></tr>
+<tr><td>Relay DANE</td><td><span class="status status-INFO">INFO</span></td><td class="detail">Not configured </td></tr>
+<tr><td>Destination MTA-STS</td><td><span class="status status-PASS">PASS</span></td><td class="detail">"v=STSv1; id=20190429T010101;" </td></tr>
+<tr><td>Destination TLS-RPT</td><td><span class="status status-PASS">PASS</span></td><td class="detail">"v=TLSRPTv1;rua=mailto:sts-reports@google.com" </td></tr>
+<tr><td>Destination DANE</td><td><span class="status status-INFO">INFO</span></td><td class="detail">Not configured </td></tr>
+</table></div></div>
+</body></html>
